@@ -1,0 +1,25 @@
+services:
+  mysql:
+    image: mysql:8
+    container_name: stock_mysql
+    command: --log-bin-trust-function-creators=1
+    environment:
+      MYSQL_DATABASE: stock_db
+      MYSQL_USER: stock_user
+      MYSQL_PASSWORD: stock_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - stock_mysql_data:/var/lib/mysql
+
+  adminer:
+    image: adminer
+    container_name: stock_adminer
+    ports:
+      - "8081:8080"
+    depends_on:
+      - mysql
+
+volumes:
+  stock_mysql_data:
