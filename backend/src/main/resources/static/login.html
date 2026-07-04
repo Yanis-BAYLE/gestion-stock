@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion - Gestion de stock</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+    <h1>Gestion de stock</h1>
+    <nav>
+        <a href="index.html">Accueil</a>
+        <a href="login.html">Connexion</a>
+    </nav>
+</header>
+
+<main class="container">
+    <section class="card login-card">
+        <h2>Connexion</h2>
+
+        <p id="login-message" class="message" aria-live="polite"></p>
+
+        <form action="/login" method="post">
+            <div class="form-group">
+                <label for="email">Adresse email</label>
+                <input type="email" id="email" name="email" required autocomplete="username">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password">
+            </div>
+
+            <button type="submit">Se connecter</button>
+        </form>
+
+        <h3>Comptes de test</h3>
+        <ul>
+            <li><strong>Admin :</strong> admin@example.com / admin123</li>
+            <li><strong>Gestionnaire :</strong> manager@example.com / manager123</li>
+            <li><strong>Lecteur :</strong> reader@example.com / reader123</li>
+        </ul>
+    </section>
+</main>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const message = document.getElementById("login-message");
+
+    if (params.has("error")) {
+        message.textContent = "Identifiants incorrects.";
+        message.className = "message error";
+    }
+
+    if (params.has("logout")) {
+        message.textContent = "Déconnexion réussie.";
+        message.className = "message success";
+    }
+</script>
+</body>
+</html>

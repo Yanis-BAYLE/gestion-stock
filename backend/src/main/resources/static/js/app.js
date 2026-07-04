@@ -1,7 +1,14 @@
 const API_BASE_URL = "/api";
 
 const messageElement = document.getElementById("message");
+const roleMessageElement = document.getElementById("role-message");
 const productsTableBody = document.getElementById("products-table-body");
+
+const currentUserElement = document.getElementById("current-user");
+const currentRoleElement = document.getElementById("current-role");
+
+const productFormSection = document.getElementById("product-form-section");
+const movementFormSection = document.getElementById("movement-form-section");
 
 const productForm = document.getElementById("product-form");
 const productFormTitle = document.getElementById("product-form-title");
@@ -22,17 +29,61 @@ const movementTypeSelect = document.getElementById("movementType");
 const movementQuantityInput = document.getElementById("movementQuantity");
 const reasonInput = document.getElementById("reason");
 
+let currentUser = null;
 let products = [];
 let categories = [];
 let suppliers = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
+    await loadCurrentUser();
+    applyRoleRestrictions();
     await loadInitialData();
 
     productForm.addEventListener("submit", handleProductSubmit);
     movementForm.addEventListener("submit", handleMovementSubmit);
     cancelEditButton.addEventListener("click", resetProductForm);
 });
+
+async function loadCurrentUser() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/me`);
+
+        if (!response.ok) {
+            window.location.href = "/login.html";
+            return;
+        }
+
+        currentUser = await response.json();
+
+        currentUserElement.textContent = `Connecté : ${currentUser.email}`;
+        currentRoleElement.textContent = `Rôle : ${getMainRoleLabel()}`;
+    } catch (error) {
+        console.error(error);
+        window.location.href = "/login.html";
+    }
+}
+
+function applyRoleRestrictions() {
+    if (canEditProducts()) {
+        productFormSection.classList.remove("hidden");
+    } else {
+        productFormSection.classList.add("hidden");
+    }
+
+    if (canCreateMovement()) {
+        movementFormSection.classList.remove("hidden");
+    } else {
+        movementFormSection.classList.add("hidden");
+    }
+
+    if (hasRole("LECTEUR")) {
+        roleMessageElement.textContent = "Mode lecture seule : vous pouvez consulter les produits, mais pas les modifier.";
+    } else if (hasRole("GESTIONNAIRE")) {
+        roleMessageElement.textContent = "Mode gestionnaire : vous pouvez créer, modifier et gérer les mouvements de stock.";
+    } else if (hasRole("ADMIN")) {
+        roleMessageElement.textContent = "Mode administrateur : vous pouvez gérer tous les produits.";
+    }
+}
 
 async function loadInitialData() {
     try {
@@ -41,6 +92,11 @@ async function loadInitialData() {
             fetch(`${API_BASE_URL}/categories`),
             fetch(`${API_BASE_URL}/suppliers`)
         ]);
+
+        if (!productsResponse.ok || !categoriesResponse.ok || !suppliersResponse.ok) {
+            showMessage("Erreur lors du chargement des données.", "error");
+            return;
+        }
 
         products = await productsResponse.json();
         categories = await categoriesResponse.json();
@@ -99,7 +155,6 @@ function renderProductsTable() {
 
         const categoryName = product.category ? product.category.name : "-";
         const supplierName = product.supplier ? product.supplier.name : "-";
-
         const stockClass = product.quantity <= product.minimumQuantity ? "low-stock" : "";
 
         row.innerHTML = `
@@ -109,20 +164,39 @@ function renderProductsTable() {
             <td>${escapeHtml(supplierName)}</td>
             <td class="${stockClass}">${product.quantity}</td>
             <td>${product.minimumQuantity}</td>
-            <td>
-                <div class="actions">
-                    <button type="button" onclick="editProduct(${product.id})">Modifier</button>
-                    <button type="button" class="danger" onclick="deleteProduct(${product.id})">Supprimer</button>
-                </div>
-            </td>
+            <td>${renderActionButtons(product.id)}</td>
         `;
 
         productsTableBody.appendChild(row);
     });
 }
 
+function renderActionButtons(productId) {
+    if (!canEditProducts() && !canDeleteProducts()) {
+        return '<span class="read-only-label">Lecture seule</span>';
+    }
+
+    let buttons = '<div class="actions">';
+
+    if (canEditProducts()) {
+        buttons += `<button type="button" onclick="editProduct(${productId})">Modifier</button>`;
+    }
+
+    if (canDeleteProducts()) {
+        buttons += `<button type="button" class="danger" onclick="deleteProduct(${productId})">Supprimer</button>`;
+    }
+
+    buttons += "</div>";
+    return buttons;
+}
+
 async function handleProductSubmit(event) {
     event.preventDefault();
+
+    if (!canEditProducts()) {
+        showMessage("Vous n'avez pas le droit de modifier les produits.", "error");
+        return;
+    }
 
     const productId = productIdInput.value;
 
@@ -170,6 +244,11 @@ async function handleProductSubmit(event) {
 }
 
 function editProduct(productId) {
+    if (!canEditProducts()) {
+        showMessage("Vous n'avez pas le droit de modifier les produits.", "error");
+        return;
+    }
+
     const product = products.find(item => item.id === productId);
 
     if (!product) {
@@ -193,6 +272,11 @@ function editProduct(productId) {
 }
 
 async function deleteProduct(productId) {
+    if (!canDeleteProducts()) {
+        showMessage("Vous n'avez pas le droit de supprimer les produits.", "error");
+        return;
+    }
+
     const confirmed = confirm("Voulez-vous vraiment supprimer ce produit ?");
 
     if (!confirmed) {
@@ -219,6 +303,11 @@ async function deleteProduct(productId) {
 
 async function handleMovementSubmit(event) {
     event.preventDefault();
+
+    if (!canCreateMovement()) {
+        showMessage("Vous n'avez pas le droit de créer un mouvement de stock.", "error");
+        return;
+    }
 
     const movementPayload = {
         productId: Number(movementProductSelect.value),
@@ -258,6 +347,16 @@ function resetProductForm() {
 }
 
 async function handleApiError(response) {
+    if (response.status === 401) {
+        window.location.href = "/login.html";
+        return;
+    }
+
+    if (response.status === 403) {
+        showMessage("Accès refusé : vous n'avez pas les droits nécessaires.", "error");
+        return;
+    }
+
     try {
         const errorBody = await response.json();
 
@@ -269,6 +368,38 @@ async function handleApiError(response) {
     } catch {
         showMessage("Erreur API.", "error");
     }
+}
+
+function hasRole(role) {
+    return currentUser && currentUser.roles.includes(`ROLE_${role}`);
+}
+
+function canEditProducts() {
+    return hasRole("ADMIN") || hasRole("GESTIONNAIRE");
+}
+
+function canDeleteProducts() {
+    return hasRole("ADMIN");
+}
+
+function canCreateMovement() {
+    return hasRole("ADMIN") || hasRole("GESTIONNAIRE");
+}
+
+function getMainRoleLabel() {
+    if (hasRole("ADMIN")) {
+        return "Administrateur";
+    }
+
+    if (hasRole("GESTIONNAIRE")) {
+        return "Gestionnaire";
+    }
+
+    if (hasRole("LECTEUR")) {
+        return "Lecteur";
+    }
+
+    return "Inconnu";
 }
 
 function showMessage(message, type) {

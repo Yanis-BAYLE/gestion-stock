@@ -149,3 +149,28 @@ button.danger:focus {
 .message.error {
     color: #b91c1c;
 }
+.user-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.user-bar form {
+    margin: 0;
+}
+
+.hidden {
+    display: none;
+}
+
+.login-card {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.read-only-label {
+    color: #6b7280;
+    font-style: italic;
+}

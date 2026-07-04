@@ -25,11 +25,12 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",
                                 "/index.html",
-                                "/products.html",
+                                "/login.html",
                                 "/css/**",
                                 "/js/**"
                         ).permitAll()
 
+                        .requestMatchers("/products.html").authenticated()
                         .requestMatchers("/api/me").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/api/products/**")
@@ -65,7 +66,24 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
+                .formLogin(form -> form
+                        .loginPage("/login.html")
+                        .loginProcessingUrl("/login")
+                        .usernameParameter("email")
+                        .passwordParameter("password")
+                        .defaultSuccessUrl("/products.html", true)
+                        .failureUrl("/login.html?error=true")
+                        .permitAll()
+                )
+
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login.html?logout=true")
+                        .permitAll()
+                )
+
                 .httpBasic(Customizer.withDefaults())
+
                 .build();
     }
 

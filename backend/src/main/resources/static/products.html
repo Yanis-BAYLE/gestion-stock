@@ -12,6 +12,15 @@
         <a href="index.html">Accueil</a>
         <a href="products.html">Produits</a>
     </nav>
+
+    <div class="user-bar">
+        <span id="current-user">Utilisateur non chargé</span>
+        <span id="current-role"></span>
+
+        <form action="/logout" method="post">
+            <button type="submit" class="secondary">Déconnexion</button>
+        </form>
+    </div>
 </header>
 
 <main class="container">
@@ -19,6 +28,7 @@
 
     <section class="card">
         <h2>Liste des produits</h2>
+        <p id="role-message"></p>
 
         <div class="table-wrapper">
             <table>
@@ -39,7 +49,7 @@
         </div>
     </section>
 
-    <section class="card">
+    <section class="card" id="product-form-section">
         <h2 id="product-form-title">Ajouter un produit</h2>
 
         <form id="product-form">
@@ -91,7 +101,7 @@
         </form>
     </section>
 
-    <section class="card">
+    <section class="card" id="movement-form-section">
         <h2>Mouvement de stock</h2>
 
         <form id="movement-form">

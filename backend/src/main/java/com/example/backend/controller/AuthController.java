@@ -15,6 +15,7 @@ public class AuthController {
         List<String> roles = authentication.getAuthorities()
                 .stream()
                 .map(authority -> authority.getAuthority())
+                .filter(role -> role.startsWith("ROLE_"))
                 .toList();
 
         return Map.of(
