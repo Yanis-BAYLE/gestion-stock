@@ -1,0 +1,151 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    color: #222;
+}
+
+.site-header {
+    background: #1f2937;
+    color: white;
+    padding: 1rem 2rem;
+}
+
+.site-header h1 {
+    margin: 0 0 0.5rem 0;
+}
+
+.site-header nav {
+    display: flex;
+    gap: 1rem;
+}
+
+.site-header a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.site-header a:hover,
+.site-header a:focus {
+    text-decoration: underline;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.card {
+    background: white;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+
+th {
+    background: #f0f2f5;
+}
+
+.low-stock {
+    color: #b91c1c;
+    font-weight: bold;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: bold;
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+textarea {
+    min-height: 80px;
+}
+
+button,
+.button {
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+button:hover,
+button:focus,
+.button:hover,
+.button:focus {
+    background: #1d4ed8;
+}
+
+button.secondary {
+    background: #6b7280;
+}
+
+button.danger {
+    background: #dc2626;
+}
+
+button.danger:hover,
+button.danger:focus {
+    background: #b91c1c;
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.message {
+    min-height: 1.5rem;
+    font-weight: bold;
+}
+
+.message.success {
+    color: #166534;
+}
+
+.message.error {
+    color: #b91c1c;
+}
